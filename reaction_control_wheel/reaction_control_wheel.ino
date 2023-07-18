@@ -1,47 +1,93 @@
 // feedback variables
-float reference;
+float reference = 0; // desired rpms
 float error;
 float sample_current;
 float sample_previous;
 int dt;
 
 // controller gains
-float P;
-float I;
-float D;
+float P = 1;
+float I = 0;
+float D = 0;
 
 // plant paremeters
 float TORQUE_CONSTANT;
 
-void setup() {
-  // put your setup code here, to run once:
+// pin assignments
+const int EN_A = 9;
+const int IN_1 = 6;
+const int IN_2 = 7;
+const int BUTTON = 10;
+const int HALL_EFFECT = 13;
+const int POT = A0;
 
+// board variables
+bool pressed = false;
+
+void setup() {
+  Serial.begin(9600);
+
+  // attach pins
+  pinMode(EN_A, OUTPUT);
+  pinMode(IN_1, OUTPUT);
+  pinMode(IN_2, OUTPUT);
+  pinMode(BUTTON, INPUT);
+  pinMode(HALL_EFFECT, INPUT);
+
+  // set initial state
+  digitalWrite(IN_1, LOW);
+  digitalWrite(IN_2, LOW);
+
+  Serial.println("Done with setup...");
+  delay(1000);
 }
 
 void loop() {
-  // set the reference
-  reference;
+  //Read button input
+  if (digitalRead(BUTTON)) {
+    pressed = !pressed;
+  }
+  // Debounce button
+  while (digitalRead(BUTTON)) {
+    delay(20);
+  }
 
-  // calculate the error
-  error = reference - sample_current;
+  if (pressed == true) {
+    int potInput = analogRead(POT);
+    
+    int speed = map(potInput, 0, 1023, 0, 255);
+    analogWrite(EN_A, speed);
+    digitalWrite(IN_1, HIGH);
+    digitalWrite(IN_2, LOW);
 
-  // input error to controller
-  float P_control = P * error;
-  float I_control = I * (sample_previous - sample_current) * dt;
-  float D_control = D * (sample_previous - sample_current) / dt;
 
-  // controller output
-  float controller_out = P_control + I_control + D_control; // torque value
+    // set the reference
+    // reference;
 
-  // TODO: add disturbances to controller output
-  float plant_in = controller_out; // torque value
+    // // calculate the error
+    // error = reference - sample_current;
 
-  // input combined controller output/disturbance into plant
-  float motor_current = plant_in / TORQUE_CONSTANT;
+    // // input error to controller
+    // float P_control = P * error;
+    // float I_control = I * (sample_previous - sample_current) * dt;
+    // float D_control = D * (sample_previous - sample_current) / dt;
 
-  // TODO: apply current to motor
+    // // controller output
+    // float controller_out = P_control + I_control + D_control; // torque value
 
-  // sample plant performance
-  sample_previous = sample_current; // store the previous angular velocity value
-  sample_current; // read flywheel angular velocity
+    // // TODO: add disturbances to controller output
+    // float plant_in = controller_out; // torque value
+
+    // // input combined controller output/disturbance into plant
+    // float motor_current = plant_in / TORQUE_CONSTANT;
+
+    // // TODO: apply current to motor
+
+    // // sample plant performance
+    // sample_previous = sample_current; // store the previous angular velocity value
+    // sample_current; // read flywheel angular velocity
+  } else {
+    digitalWrite(IN_1, LOW);
+    digitalWrite(IN_2, LOW);
+  }
 }
