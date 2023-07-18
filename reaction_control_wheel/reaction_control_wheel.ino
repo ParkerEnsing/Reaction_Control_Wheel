@@ -1,3 +1,5 @@
+#include <LiquidCrystal_I2C.h>
+
 // feedback variables
 float reference = 0; // desired rpms
 float error;
@@ -24,8 +26,12 @@ const int POT = A0;
 // board variables
 bool pressed = false;
 
+// create LCD
+LiquidCrystal_I2C lcd(0x27, 20, 4);
+
 void setup() {
-  Serial.begin(9600);
+  lcd.init();
+  lcd.backlight();
 
   // attach pins
   pinMode(EN_A, OUTPUT);
@@ -38,7 +44,6 @@ void setup() {
   digitalWrite(IN_1, LOW);
   digitalWrite(IN_2, LOW);
 
-  Serial.println("Done with setup...");
   delay(1000);
 }
 
@@ -56,13 +61,9 @@ void loop() {
     int potInput = analogRead(POT);
     
     int speed = map(potInput, 0, 1023, 0, 255);
-    analogWrite(EN_A, speed);
-    digitalWrite(IN_1, HIGH);
-    digitalWrite(IN_2, LOW);
-
-
+    
     // set the reference
-    // reference;
+    reference;
 
     // // calculate the error
     // error = reference - sample_current;
@@ -82,10 +83,20 @@ void loop() {
     // float motor_current = plant_in / TORQUE_CONSTANT;
 
     // // TODO: apply current to motor
+    analogWrite(EN_A, speed);
+    digitalWrite(IN_1, HIGH);
+    digitalWrite(IN_2, LOW);
 
     // // sample plant performance
     // sample_previous = sample_current; // store the previous angular velocity value
     // sample_current; // read flywheel angular velocity
+
+    // Write info to LCD
+    lcd.setCursor(0,0);
+    lcd.print("Ref: " + reference)
+    lcd setCursor(0,2);
+    lcd.print("Speed: " + sample_current)
+
   } else {
     digitalWrite(IN_1, LOW);
     digitalWrite(IN_2, LOW);
